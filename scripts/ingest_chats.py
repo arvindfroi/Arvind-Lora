@@ -191,12 +191,33 @@ def parse_imessage(path):
                 i += 1
 
 
+def parse_sms_backup(path):
+    """XML from the Android 'SMS Backup & Restore' app (sms-*.xml).
+    type=2 means sent by me, type=1 received."""
+    import xml.etree.ElementTree as ET
+    for _, elem in ET.iterparse(str(path)):
+        if elem.tag != "sms":
+            continue
+        body = elem.get("body") or ""
+        addr = elem.get("address") or "unknown"
+        try:
+            ts = datetime.fromtimestamp(int(elem.get("date", "0")) / 1000)
+        except (ValueError, OSError):
+            elem.clear()
+            continue
+        sender = "me" if elem.get("type") == "2" else addr
+        if body:
+            yield (addr, ts, sender, body)
+        elem.clear()
+
+
 PARSERS = {
     "snapchat": parse_snapchat,
     "whatsapp": parse_whatsapp,
     "messenger": parse_messenger,
     "instagram": parse_messenger,  # same Meta export format
     "imessage": parse_imessage,
+    "sms": parse_sms_backup,       # Android SMS Backup & Restore XML
 }
 
 

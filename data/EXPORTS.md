@@ -4,6 +4,16 @@ None of these platforms allow direct API access to message history, so the pipel
 consumes their official data exports. Do these on your own devices, then drop the
 files into this repo (or a private location) and run `scripts/ingest_chats.py`.
 
+## The hand-off (no terminal needed on your side)
+
+**Upload any export zip/file to a Google Drive folder named `lora-exports`** and say
+so in the Claude session. Claude can read your Drive, so it will download the export,
+run the ingestion, review/anonymize, and commit the training samples — you never have
+to run the scripts yourself. (Status as of 2026-07-05: no Snapchat export, Google
+Takeout, or Apple data request has ever been run on these accounts — each one below
+still needs you to click through its export flow once, because they require your
+password/2FA.)
+
 ## Snapchat (your main one)
 
 1. Go to <https://accounts.snapchat.com> → **My Data**.
@@ -51,6 +61,41 @@ python3 scripts/ingest_chats.py --platform whatsapp --input _chat.txt --me "Arvi
    python3 scripts/ingest_chats.py --platform instagram \
      --input your_instagram_activity/messages/inbox/ --me "Arvind Frøiland"
    ```
+
+## Android SMS/RCS (you're on a Pixel — this one is easy and rich)
+
+Google Takeout does **not** include Messages content; the standard route is the
+free **SMS Backup & Restore** app (SyncTech):
+
+1. Install it from Play Store → Back up → Messages only, local backup, XML.
+2. Upload the `sms-*.xml` file to Drive (`lora-exports`).
+3. Ingest: `python3 scripts/ingest_chats.py --platform sms --input sms-20260705.xml`
+
+## Gboard (honest assessment: skip it)
+
+Gboard does not upload the text you type — there is nothing to export that contains
+your prose. The only exportable artifact is the personal dictionary (Gboard →
+Dictionary → Personal dictionary → ⋮ → Export), which is a word list, not writing.
+Useful only as a slang glossary to check the corpus against; not training data.
+Your actual phone typing is better captured via SMS export (above) and the chat
+platforms' own exports.
+
+## Apple iCloud
+
+Two separate things people mean by "iCloud data":
+
+- **iMessages: NOT included in Apple's data export.** Apple's Data & Privacy
+  download (<https://privacy.apple.com>) deliberately excludes message content.
+  The only real route is the Mac `imessage-exporter` flow in the iMessage section
+  above — 10 minutes on your Mac.
+- **Notes, Pages documents, iCloud Drive files** (often full of your writing):
+  - Quick per-item route: on the Mac, select notes → File → Export as PDF, or for
+    bulk use the free [Exporter](https://apps.apple.com/app/exporter/id1099120373)
+    app (Notes → Markdown files). Pages docs: File → Export To → Plain Text.
+  - Bulk route: <https://privacy.apple.com> → request a copy of your data → select
+    iCloud Drive files and Notes; Apple emails a download within ~7 days.
+  - Upload whatever comes out to `lora-exports` in Drive; Markdown/txt/PDF all work —
+    Claude will sort authored writing from clutter during curation.
 
 ## Discord
 
