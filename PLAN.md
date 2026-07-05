@@ -7,17 +7,19 @@ right register for the content.
 
 ## Phase 0 — Grow the corpus (the thing that actually decides success)
 
-Current state: ~50 curated samples, ~3 500 words of gold-tier text. That is enough to
-prototype, **not** enough for "indistinguishable". Style cloning starts working well
-around 300–500 samples and keeps improving into the thousands.
+Current state: 96 curated samples (89 gold), ~3 900 words of Arvind-text, covering
+the full reachable Gmail history (2023→2026). That is enough to prototype, **not**
+enough for "indistinguishable". Style cloning starts working well around 300–500
+samples and keeps improving into the thousands.
 
 Priorities (see `data/curation-notes.md` for details):
 
-1. Chat exports (Messenger/WhatsApp/iMessage/Discord) — his side only. This is the
-   single highest-value action; expect 10–100× more gold text.
-2. Full Gmail Takeout for older sent mail (pre-2025).
-3. Solo school essays and the bachelor draft for the academic register.
-4. Re-fetch the 15 truncated email samples marked `"complete": false`.
+1. **Chat exports — blocked on Arvind.** Snapchat (main platform), iMessage,
+   WhatsApp, Instagram have no APIs; the official-export route is documented in
+   `data/EXPORTS.md` and `scripts/ingest_chats.py` converts each export straight
+   into training samples. This is the 10–100× data multiplier.
+2. Solo school essays and the bachelor draft for the academic register.
+3. Re-fetch the ~24 truncated email samples marked `"complete": false`.
 
 Hard rule carried through every phase: **AI-drafted text stays out of the gold tier.**
 Arvind uses Claude to draft polished mail; training on that produces an assistant

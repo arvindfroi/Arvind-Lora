@@ -17,8 +17,13 @@ data/
   style-profile.md    # Analysis of Arvind's voice, per language and register.
   curation-notes.md   # Where the data came from, what was excluded and why,
                       # and what to collect next.
+  EXPORTS.md          # How to export Snapchat/iMessage/WhatsApp/Instagram data
+                      # (no APIs exist for these — official exports only).
+  chat/               # Output of ingest_chats.py — review before committing;
+                      # contains quoted context from chat partners.
 scripts/
   build_dataset.py    # corpus.jsonl -> chat-format train/val JSONL for SFT.
+  ingest_chats.py     # chat exports -> training samples (partners anonymized).
 PLAN.md               # The full fine-tuning plan (model options, LoRA recipe,
                       # evaluation, serving).
 ```

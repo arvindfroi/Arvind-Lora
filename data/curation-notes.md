@@ -4,9 +4,10 @@
 
 | Source | What was found | Status |
 |---|---|---|
-| Gmail sent mail (~201 threads) | The primary corpus. Casual + formal NO, casual EN, community EN. | ~50 best samples extracted to `corpus.jsonl` |
+| Gmail sent mail (all ~201 threads, 2023→2026) | The primary corpus. Casual + formal NO, casual EN, community EN, family one-liners, a full commission-dispute arc. | ~96 samples extracted to `corpus.jsonl` |
 | Google Drive (50+ files) | Academic assignments, exam notes, cheatsheets, images | 2 documents sampled; more below |
 | GitHub | Only this (empty) repo is in session scope | Not scanned |
+| Snapchat / iMessage / WhatsApp / Instagram / Discord | **No connector exists** — platforms don't expose message APIs to third parties. | Ingestion pipeline ready: `scripts/ingest_chats.py` + `data/EXPORTS.md`. Waiting on your exports. |
 
 ## Tier system
 
@@ -31,6 +32,12 @@
   for LLM Inference…").
 - Group-assignment sections attributable to other students (ORG219 sections labeled
   with other names).
+- 2023 "gpt" self-emails (ChatGPT essay drafts he mailed to himself — pure AI text).
+- A 2024 university case-handling thread (sensitive disciplinary matter; only style,
+  not substance, would be gained) and mails containing account numbers/personalia.
+- Balance note: the 2024 commission dispute produced ~15 sendable emails to one
+  recipient; only 8 were included so a single correspondent doesn't dominate the
+  English casual register.
 
 ## Redactions applied
 

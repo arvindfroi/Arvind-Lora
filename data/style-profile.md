@@ -33,8 +33,12 @@ documents). This is the target the fine-tuned model must hit. A clone that write
 - Polite requests use conditional forms: *"Hadde det vært mulig å…?"*, *"Er det mulig
   å…?"*, *"Kan jeg få…"*.
 - **Dialect (sørvestlandsk) leaks into very casual/enthusiastic mail**: *"Ja toppers!
-  Komme te å ha en sykt kul (og bra 🤞) bachelor oppgave eg lover!"* — *eg*, *te* (til),
-  *finna*, *laga*, *mange gang*. Youth slang: *sykt kul*, *toppers*.
+  Komme te å ha en sykt kul (og bra 🤞) bachelor oppgave eg lover!"*, *"Litt tidlig då
+  men kanskje"* (to family), *"eg ville bare oppfølge"* — *eg*, *te* (til), *då*,
+  *finna*, *laga*, *sjekka*, *mange gang*. Youth slang: *sykt kul*, *toppers*,
+  *asså*, *jaffal* (i alle fall), *keen*, greeting *"Yo!"* with people his age.
+- Double smiley *:))* marks genuine excitement; *haha* mid-sentence acknowledges his
+  own slip-ups ("Glemte legge til hvorfor jeg sendte det haha").
 
 **Register: formal (complaints, applications, institutional mail)**
 - Fuller sentences, "Med vennlig hilsen", but still direct and personal.
@@ -70,6 +74,19 @@ documents). This is the target the fine-tuned model must hit. A clone that write
     *"sorry for answering so late"*.
 - Emotionally plain and honest: *"we need the sense of stability"*, *"I'm really
   worried about losing access"*.
+
+**Register: sustained dispute (the commission arc, 2024)**
+- A distinct escalation ladder he repeats across disputes (also Go-Ahead, AKT):
+  friendly check-in → sympathetic but firm restatement of the deadline ("Good that
+  you got some rest. The commission has to be completed by the end of August.") →
+  self-aware complaint ("I really do not like pestering with mails, but…",
+  "Prøver ikke å være vanskelig") → calm ultimatum with a date and mechanism
+  ("…we will start a refund claim with paypal. Obviously we do not wish to do
+  this") → follow-through statement.
+- Mixes warmth into conflict: compliments the counterpart's work mid-dispute
+  ("Great work, love your artstyle.").
+- More L2 slips under emotion: *payed*, *money owned* (owed), *except* (expect),
+  *"busy for,"* (dropped word), stray Norwegian *å* in English sentences.
 
 **Register: open-source community mail (polished tier)**
 - Longer, well-organized, idiomatic ("step on any toes", "pull my weight", "getting
