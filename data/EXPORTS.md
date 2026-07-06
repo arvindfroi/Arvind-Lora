@@ -71,6 +71,27 @@ free **SMS Backup & Restore** app (SyncTech):
 2. Upload the `sms-*.xml` file to Drive (`lora-exports`).
 3. Ingest: `python3 scripts/ingest_chats.py --platform sms --input sms-20260705.xml`
 
+## Generating NEW dialect data (live tool)
+
+The dialect (sørvestlandsk) is underrepresented outside Snapchat, so there's a
+purpose-built capture tool deployed on Val Town:
+
+**https://arvindfroi--0142b74c797411f1b67e1607ee4eb77e.web.val.run**
+
+- Open it on your phone, answer the prompt exactly like you'd talk, hit "Lagre og
+  neste". 22 rotating prompts across chat/storytelling/opinion registers, most
+  dialect-eliciting, a couple bokmål for contrast. 2–5 minutes a day.
+- Every answer is stored as a ready gold-tier corpus entry (the prompt becomes the
+  training brief). Claude pulls them with:
+  `curl <tool-url>/export-x7qk2m9v.jsonl >> data/corpus.jsonl` (then dedupe/validate).
+- Source code lives in the val `arvindfroi/dialekt-treningsdata`.
+
+**Voice route (highest dialect density):** record yourself talking (voice memos,
+rants, explaining things) and upload the audio files to Drive. Transcription with
+NB-Whisper (Nasjonalbiblioteket's Norwegian Whisper, handles dialects) turns
+speech into `spoken-dialect` register samples. Spoken ≠ written, so these get
+their own register tag and moderate weight — but nothing captures dialect faster.
+
 ## Gboard (honest assessment: skip it)
 
 Gboard does not upload the text you type — there is nothing to export that contains
