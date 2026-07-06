@@ -8,9 +8,8 @@
 | Google Drive (50+ files) | Academic assignments, exam notes, cheatsheets, images | 2 documents sampled; more below |
 | GitHub | Only this (empty) repo is in session scope | Not scanned |
 | **Inspera exam PDFs (11 files, 2024-2026)** | Proctored school exams from 10 courses (EX-100, ST-100/101/102/103/200/205, ME-100, ORG100/200) + one ST-108 home exam | **Ingested: 14 entries / ~23k words.** School exams = gold (verified solo, offline); ST-108 home exam = silver. Extractor: `scripts/ingest_inspera.py`. `eks.zip` ignored per Arvind. |
-| **Snapchat My Data export (2026-07-05)** | 214 conversations, 124 with usable text. Both languages, heavy dialect, the real chat voice. | **Ingested: 5,450 samples / ~54,800 words → `data/chat/snapchat.jsonl`.** 16 samples dropped (credentials, account numbers, digit-only codes). Raw export NOT committed — only processed samples with anonymized partners. |
+| **Snapchat full history (2026-07-06, direct upload)** | 300 conversations, 117,582 messages, July 2021 → July 2026. Supersedes the 2026-07-05 export. | **Ingested: 20,148 samples / ~157,700 words → `data/chat/snapchat.jsonl`** (replaced wholesale; 29 dropped in hygiene pass). Raw export NOT committed. |
 | **Messenger export (2026-07-06, messages.zip)** | 33 conversations, newer flat-JSON Meta layout | **Ingested: 673 samples / ~6,750 words → `data/chat/messenger.jsonl`** (5 dropped in hygiene pass). Parser now handles both Meta layouts. |
-| **Snapchat export #2 (deeper history)** | mydata~1783368464598.zip, 11.4 MB | **Blocked: exceeds the 10 MB Drive-download limit.** Needs re-upload as a zip of only json/chat_history.json. |
 | iMessage / WhatsApp / Instagram / Discord | **No connector exists** — platforms don't expose message APIs to third parties. | Ingestion pipeline ready: `scripts/ingest_chats.py` + `data/EXPORTS.md`. Waiting on your exports. |
 | Google Takeout (Drive+Mail, ready until 2026-07-12) | Redundant with live connectors; Mail mbox useful for completing truncated samples | Awaiting upload if desired |
 | Apple data request | Requested 2026-07-05, preparing (~7 days). Will contain Notes/iCloud Drive but NOT iMessages | Pending |

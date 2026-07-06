@@ -7,13 +7,14 @@ right register for the content.
 
 ## Phase 0 — Grow the corpus (the thing that actually decides success)
 
-Current state: **5,560 training samples, ~82k words of Arvind-text** —
+Current state: **20,931 training samples, ~192k words of Arvind-text** —
 110 curated samples in `data/corpus.jsonl` (~27 300 words, incl. 13 gold
-proctored Inspera exam answers covering the formal academic register with
-verified authorship) plus **5,450 Snapchat chat samples**
-(`data/chat/snapchat.jsonl`, ~54 800 words, 2024→2026, both languages, full
-dialect). Every major register now has authentic coverage; this is enough to
-train a serious style LoRA.
+proctored Inspera exam answers), **20,148 Snapchat samples** spanning five
+years (2021→2026, `data/chat/snapchat.jsonl`, ~157 700 words) and **673
+Messenger samples** (`data/chat/messenger.jsonl`, ~6 750 words). Every major
+register has deep authentic coverage, including the evolution of his voice
+over five years. This is more than enough for a serious style LoRA — data
+collection is no longer the bottleneck; training and evaluation are.
 
 Remaining collection (see `data/curation-notes.md`):
 
