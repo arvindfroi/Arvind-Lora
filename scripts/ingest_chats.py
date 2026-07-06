@@ -133,30 +133,38 @@ def parse_whatsapp(path):
             yield (current[0], current[1], current[2], line)
 
 
+def _fix_meta_mojibake(s):
+    """Older Meta exports encode UTF-8 as latin-1 escapes; undo when applicable."""
+    try:
+        return s.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return s
+
+
 def parse_messenger(path):
-    """Meta 'Download your information' JSON: a folder like messages/inbox/<thread>/
-    with message_1.json etc. Pass either one thread folder or the whole inbox/."""
+    """Meta 'Download your information' JSON. Handles both layouts:
+    - classic: messages/inbox/<thread>/message_1.json with content/sender_name/timestamp_ms
+    - newer (2025+): flat '<Thread Name>_<n>.json' with text/senderName/timestamp"""
     root = Path(path)
-    files = sorted(root.rglob("message_*.json"))
+    files = sorted(root.rglob("message_*.json")) or sorted(root.glob("*.json"))
     for f in files:
-        data = json.loads(f.read_text(encoding="utf-8"))
-        conv = data.get("title") or f.parent.name
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(data, dict) or "messages" not in data:
+            continue
+        conv = data.get("title") or data.get("threadName") or f.stem
         for msg in data.get("messages", []):
-            text = msg.get("content")
-            if not text:
+            text = msg.get("content") or msg.get("text")
+            if not text or msg.get("type") not in (None, "text"):
                 continue
-            # Meta exports encode UTF-8 as latin-1 escapes; undo it.
-            try:
-                text = text.encode("latin-1").decode("utf-8")
-            except (UnicodeEncodeError, UnicodeDecodeError):
-                pass
-            ts = datetime.fromtimestamp(msg["timestamp_ms"] / 1000)
-            sender = msg.get("sender_name", "unknown")
-            try:
-                sender = sender.encode("latin-1").decode("utf-8")
-            except (UnicodeEncodeError, UnicodeDecodeError):
-                pass
-            yield (conv, ts, sender, text)
+            ts_raw = msg.get("timestamp_ms") or msg.get("timestamp")
+            if not ts_raw:
+                continue
+            ts = datetime.fromtimestamp(ts_raw / 1000)
+            sender = msg.get("sender_name") or msg.get("senderName") or "unknown"
+            yield (conv, ts, _fix_meta_mojibake(sender), _fix_meta_mojibake(text))
 
 
 IMESSAGE_DATE_RE = re.compile(r"^[A-Z][a-z]{2} \d{1,2}, \d{4}\s+\d{1,2}:\d{2}:\d{2} [AP]M")
