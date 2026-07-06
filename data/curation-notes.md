@@ -7,6 +7,7 @@
 | Gmail sent mail (all ~201 threads, 2023→2026) | The primary corpus. Casual + formal NO, casual EN, community EN, family one-liners, a full commission-dispute arc. | ~96 samples extracted to `corpus.jsonl` |
 | Google Drive (50+ files) | Academic assignments, exam notes, cheatsheets, images | 2 documents sampled; more below |
 | GitHub | Only this (empty) repo is in session scope | Not scanned |
+| **Inspera exam PDFs (11 files, 2024-2026)** | Proctored school exams from 10 courses (EX-100, ST-100/101/102/103/200/205, ME-100, ORG100/200) + one ST-108 home exam | **Ingested: 14 entries / ~23k words.** School exams = gold (verified solo, offline); ST-108 home exam = silver. Extractor: `scripts/ingest_inspera.py`. `eks.zip` ignored per Arvind. |
 | **Snapchat My Data export (2026-07-05)** | 214 conversations, 124 with usable text. Both languages, heavy dialect, the real chat voice. | **Ingested: 5,450 samples / ~54,800 words → `data/chat/snapchat.jsonl`.** 16 samples dropped (credentials, account numbers, digit-only codes). Raw export NOT committed — only processed samples with anonymized partners. |
 | iMessage / WhatsApp / Instagram / Discord | **No connector exists** — platforms don't expose message APIs to third parties. | Ingestion pipeline ready: `scripts/ingest_chats.py` + `data/EXPORTS.md`. Waiting on your exports. |
 | Google Takeout (Drive+Mail, ready until 2026-07-12) | Redundant with live connectors; Mail mbox useful for completing truncated samples | Awaiting upload if desired |

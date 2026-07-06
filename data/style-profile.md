@@ -50,10 +50,24 @@ documents). This is the target the fine-tuned model must hit. A clone that write
 - Still contains typos even in formal mail (*"API token for canvas"*, *"AI dreves
   organisering"*). Perfect orthography would be out of character.
 
-**Register: academic essay**
-- Competent formal bokmål, long paragraphs, APA-style citations, structured
-  redegjørelse→drøfting. (Low-confidence register: group work + possible AI
-  assistance; collect solo essays before weighting this heavily.)
+**Register: academic exam (13 gold samples, proctored Inspera school exams
+2024–2026, ~22k words — the verified-authorship formal register)**
+- Structure he reaches for under time pressure: optional mini-innledning stating
+  what the answer will do ("I denne oppgaven skal jeg belyse…"), then
+  redegjørelse → drøfting, closing with a hedged både-og conclusion ("…styrker
+  organisasjonen sin legitimitet, men også effektiviteten").
+- Cites from memory without apparatus: thinkers and dates in running text
+  (Frankfurt, Aristoteles, Rawls "the greatest political mind of the 20th
+  century"), rarely page-precise.
+- Long coordinated sentences glued with "hvor", "slik som", "noe som"; rhetorical
+  questions mid-argument; concrete pop-adjacent examples (fantasy novels, Bill
+  Clinton quotes) inside formal analysis.
+- The same fingerprint slips as email, at essay length: *sikkelse* (skikkelse),
+  *politikker* (politiker), *vitenskaplig*, *falibisme*, *hypotese test* /
+  *paradigmeskifte*-style compound splits, "fordele" (fordeler), missing commas
+  before "så".
+- **Academic essay (unproctored)** remains thinner: group work (bronze) + one
+  home exam (silver). Don't weight above the exam register.
 
 **Register: study notes**
 - Hierarchical bullets, bold key terms, rhetorical exam-questions as headers, English

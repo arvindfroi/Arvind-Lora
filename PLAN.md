@@ -7,19 +7,19 @@ right register for the content.
 
 ## Phase 0 — Grow the corpus (the thing that actually decides success)
 
-Current state: **5,546 training samples** — 96 curated email/doc samples
-(`data/corpus.jsonl`, ~3 900 words) plus **5,450 Snapchat chat samples**
-(`data/chat/snapchat.jsonl`, ~54 800 words of Arvind-text, 2024→2026, both
-languages, full dialect). This crossed the threshold where a style LoRA becomes
-genuinely viable; chat is now the dominant register, which matches how he
-actually writes day-to-day.
+Current state: **5,560 training samples, ~82k words of Arvind-text** —
+110 curated samples in `data/corpus.jsonl` (~27 300 words, incl. 13 gold
+proctored Inspera exam answers covering the formal academic register with
+verified authorship) plus **5,450 Snapchat chat samples**
+(`data/chat/snapchat.jsonl`, ~54 800 words, 2024→2026, both languages, full
+dialect). Every major register now has authentic coverage; this is enough to
+train a serious style LoRA.
 
 Remaining collection (see `data/curation-notes.md`):
 
 1. iMessage via Mac `imessage-exporter` (pipeline ready).
 2. Apple data request (in flight): Notes + iCloud Drive docs.
-3. Solo school essays and the bachelor draft for the academic register.
-4. Re-fetch the ~24 truncated email samples marked `"complete": false`.
+3. Re-fetch the ~24 truncated email samples marked `"complete": false`.
 
 Mix guidance now that chat dominates: email/formal registers are outnumbered 57:1.
 Either upsample the email corpus ~3–5× in training, or accept a chat-leaning clone
