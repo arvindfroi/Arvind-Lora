@@ -7,7 +7,11 @@
 | Gmail sent mail (all ~201 threads, 2023→2026) | The primary corpus. Casual + formal NO, casual EN, community EN, family one-liners, a full commission-dispute arc. | ~96 samples extracted to `corpus.jsonl` |
 | Google Drive (50+ files) | Academic assignments, exam notes, cheatsheets, images | 2 documents sampled; more below |
 | GitHub | Only this (empty) repo is in session scope | Not scanned |
-| Snapchat / iMessage / WhatsApp / Instagram / Discord | **No connector exists** — platforms don't expose message APIs to third parties. | Ingestion pipeline ready: `scripts/ingest_chats.py` + `data/EXPORTS.md`. Waiting on your exports. |
+| **Snapchat My Data export (2026-07-05)** | 214 conversations, 124 with usable text. Both languages, heavy dialect, the real chat voice. | **Ingested: 5,450 samples / ~54,800 words → `data/chat/snapchat.jsonl`.** 16 samples dropped (credentials, account numbers, digit-only codes). Raw export NOT committed — only processed samples with anonymized partners. |
+| iMessage / WhatsApp / Instagram / Discord | **No connector exists** — platforms don't expose message APIs to third parties. | Ingestion pipeline ready: `scripts/ingest_chats.py` + `data/EXPORTS.md`. Waiting on your exports. |
+| Google Takeout (Drive+Mail, ready until 2026-07-12) | Redundant with live connectors; Mail mbox useful for completing truncated samples | Awaiting upload if desired |
+| Apple data request | Requested 2026-07-05, preparing (~7 days). Will contain Notes/iCloud Drive but NOT iMessages | Pending |
+| Gboard GDPR request | Draft created in Gmail (Art. 15+20) — expects confirmation data is on-device only | Awaiting user send |
 
 ## Tier system
 

@@ -7,19 +7,23 @@ right register for the content.
 
 ## Phase 0 — Grow the corpus (the thing that actually decides success)
 
-Current state: 96 curated samples (89 gold), ~3 900 words of Arvind-text, covering
-the full reachable Gmail history (2023→2026). That is enough to prototype, **not**
-enough for "indistinguishable". Style cloning starts working well around 300–500
-samples and keeps improving into the thousands.
+Current state: **5,546 training samples** — 96 curated email/doc samples
+(`data/corpus.jsonl`, ~3 900 words) plus **5,450 Snapchat chat samples**
+(`data/chat/snapchat.jsonl`, ~54 800 words of Arvind-text, 2024→2026, both
+languages, full dialect). This crossed the threshold where a style LoRA becomes
+genuinely viable; chat is now the dominant register, which matches how he
+actually writes day-to-day.
 
-Priorities (see `data/curation-notes.md` for details):
+Remaining collection (see `data/curation-notes.md`):
 
-1. **Chat exports — blocked on Arvind.** Snapchat (main platform), iMessage,
-   WhatsApp, Instagram have no APIs; the official-export route is documented in
-   `data/EXPORTS.md` and `scripts/ingest_chats.py` converts each export straight
-   into training samples. This is the 10–100× data multiplier.
-2. Solo school essays and the bachelor draft for the academic register.
-3. Re-fetch the ~24 truncated email samples marked `"complete": false`.
+1. iMessage via Mac `imessage-exporter` (pipeline ready).
+2. Apple data request (in flight): Notes + iCloud Drive docs.
+3. Solo school essays and the bachelor draft for the academic register.
+4. Re-fetch the ~24 truncated email samples marked `"complete": false`.
+
+Mix guidance now that chat dominates: email/formal registers are outnumbered 57:1.
+Either upsample the email corpus ~3–5× in training, or accept a chat-leaning clone
+and rely on the register tag to switch modes — decide after the first eval run.
 
 Hard rule carried through every phase: **AI-drafted text stays out of the gold tier.**
 Arvind uses Claude to draft polished mail; training on that produces an assistant
