@@ -4,3 +4,10 @@ __pycache__/
 *.safetensors
 training/out/
 training/lora_out/
+training/lora_out_qwythos/
+training/smoke_out/
+.venv/
+*.log
+training/status_*.json
+.piptmp/
+.pipcache/

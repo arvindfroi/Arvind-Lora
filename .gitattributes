@@ -1,0 +1,2 @@
+# Shell scripts must keep LF endings so bash on Linux pods/WSL doesn't fail on \r
+*.sh text eol=lf

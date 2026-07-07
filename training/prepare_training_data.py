@@ -56,6 +56,11 @@ def main():
     ap.add_argument("--tiers", default="gold,silver")
     ap.add_argument("--chat-val-ratio", type=float, default=0.02)
     ap.add_argument("--corpus-val-ratio", type=float, default=0.10)
+    ap.add_argument("--max-chat-per-file", type=int, default=0,
+                    help="cap train samples kept per chat file (0 = keep all). "
+                         "Trims the redundant Snapchat tail; keeps small files "
+                         "(Messenger) whole. Improves register balance and "
+                         "training time without touching val.")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--out", default=str(ROOT / "training" / "out"))
     args = ap.parse_args()
@@ -80,7 +85,10 @@ def main():
         random.shuffle(rows)
         k = int(len(rows) * args.chat_val_ratio)
         chat_val.extend(rows[:k])
-        chat_train.extend(rows[k:])
+        keep = rows[k:]
+        if args.max_chat_per_file and len(keep) > args.max_chat_per_file:
+            keep = keep[:args.max_chat_per_file]   # already shuffled above
+        chat_train.extend(keep)
 
     train = corpus_train * args.upsample + chat_train
     random.shuffle(train)
