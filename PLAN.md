@@ -63,9 +63,10 @@ Requirements: strong Norwegian Bokmål, open weights, runnable locally, LoRA-fri
 | Mistral Nemo 12B | 12B | good | Strong multilingual tokenizer |
 | NorMistral / NB-Llama (NorwAI, Nasjonalbiblioteket) | 7–8B | native-focused | Trained on Norwegian corpora; weaker instruction-following — pair with more SFT data |
 | Qwen 3 14B | 14B | good | Strong generalist alternative |
+| fluffy12222/Qwythos-9B-Claude-Mythos-5-1M-heretic-abliterated | 9B | good | less barriers and more agentic. |
 
 Recommendation: prototype on Llama 3.1 8B (fast, cheap), do the real runs on
-Gemma 3 12B, and A/B against NorMistral if the Norwegian ever feels off.
+Gemma 3 12B, and A/B against NorMistral if the Norwegian ever feels off. Do even more fine tuning together on other data sets (lower refusals, norwegian/dialects, fable 5/mythos, deepthink chain of thought)
 
 Note: hosted fine-tuning APIs (OpenAI, Together, etc.) also work, but local
 open-weights + LoRA keeps the personal corpus on your own hardware — given how private
