@@ -2,3 +2,5 @@ out/
 __pycache__/
 *.gguf
 *.safetensors
+training/out/
+training/lora_out/
