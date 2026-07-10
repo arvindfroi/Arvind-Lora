@@ -38,7 +38,7 @@ def read_status(path):
         return None
 
 
-def run_stage(name, phase, epochs, out, status_file, env_note):
+def run_stage(name, phase, epochs, out, status_file, env_note, extra=()):
     """Launch one training stage, inheriting stdout so its live bar shows.
     Returns (exit_code, final_status_dict)."""
     status_file = Path(status_file)
@@ -49,7 +49,7 @@ def run_stage(name, phase, epochs, out, status_file, env_note):
            "--epochs", str(epochs),
            "--out", str(out),
            "--status-file", str(status_file),
-           "--phase", phase]
+           "--phase", phase, *extra]
 
     bar = "=" * 62
     print(f"\n{bar}\n  STAGE: {name}   ({epochs} epochs -> {out})\n{bar}",
@@ -94,13 +94,35 @@ def main():
     ap.add_argument("--skip-smoke", action="store_true")
     ap.add_argument("--out", default=str(HERE / "lora_out_qwythos"))
     ap.add_argument("--smoke-out", default=str(HERE / "smoke_out"))
+    # Forwarded verbatim to train_qwythos.py, so the smoke stage exercises the
+    # *same* kernel/packing path the real run will use. A gate that tested a
+    # different configuration than the paid run would be worthless.
+    ap.add_argument("--batch", type=int)
+    ap.add_argument("--grad-accum", type=int)
+    ap.add_argument("--packing", action="store_true")
+    ap.add_argument("--attn")
+    ap.add_argument("--max-step-seconds", type=float, default=45.0,
+                    help="gate: abort if the smoke run is slower than this per step")
     args = ap.parse_args()
+
+    extra = []
+    if args.batch is not None:
+        extra += ["--batch", str(args.batch)]
+    if args.grad_accum is not None:
+        extra += ["--grad-accum", str(args.grad_accum)]
+    if args.packing:
+        extra += ["--packing"]
+    if args.attn:
+        extra += ["--attn", args.attn]
+    if extra:
+        print(f">>> forwarding to trainer: {' '.join(extra)}", flush=True)
 
     if not args.skip_smoke:
         code, status = run_stage(
             "SMOKE", "smoke", args.smoke_epochs, args.smoke_out,
-            HERE / "status_smoke.json", "")
-        ok, why = gate(status) if code == 0 else (False, f"smoke exited {code}")
+            HERE / "status_smoke.json", "", extra)
+        ok, why = (gate(status, args.max_step_seconds) if code == 0
+                   else (False, f"smoke exited {code}"))
         print(f"\n>>> GATE: {'PASS' if ok else 'FAIL'} - {why}", flush=True)
         if not ok:
             print(">>> Aborting: not starting the real run.", flush=True)
@@ -109,7 +131,7 @@ def main():
 
     code, status = run_stage(
         "REAL", "train", args.epochs, args.out,
-        HERE / "status_real.json", "")
+        HERE / "status_real.json", "", extra)
     if code != 0 or status.get("error"):
         print(f"\n>>> REAL RUN FAILED (exit {code}): "
               f"{status.get('error','')}", flush=True)
