@@ -37,22 +37,13 @@ def main():
     model = PeftModel.from_pretrained(model, args.adapter)
     model = model.merge_and_unload()
 
-    # Prefer a text-only save. Qwen3_5ForConditionalGeneration keeps the LM under
-    # .model (a Qwen3_5Model / *ForCausalLM). If we can isolate it, GGUF conversion
-    # is much more likely to succeed; otherwise fall back to saving everything.
-    text_model = getattr(model, "language_model", None) or getattr(model, "model", None)
-    saved_text_only = False
-    if text_model is not None and hasattr(text_model, "save_pretrained"):
-        try:
-            text_model.save_pretrained(out, safe_serialization=True)
-            saved_text_only = True
-            print(f"saved TEXT-ONLY language model -> {out}", flush=True)
-        except Exception as e:
-            print(f"text-only save failed ({e}); saving full model instead", flush=True)
-
-    if not saved_text_only:
-        model.save_pretrained(out, safe_serialization=True)
-        print(f"saved FULL (multimodal) model -> {out}", flush=True)
+    # Save the FULL model. It keeps architecture "Qwen3_5ForConditionalGeneration",
+    # which is exactly what llama.cpp's convert_hf_to_gguf.py is registered for
+    # (conversion/qwen.py) — the converter strips the vision tower itself. An earlier
+    # attempt to save only the text submodule wrote arch "Qwen3_5Model", which the
+    # converter rejects ("Model Qwen3_5Model is not supported").
+    model.save_pretrained(out, safe_serialization=True)
+    print(f"saved FULL model (Qwen3_5ForConditionalGeneration) -> {out}", flush=True)
 
     # The adapter dir carries the patched chat template + tokenizer — copy those in
     # so the GGUF gets the same formatting training used.
