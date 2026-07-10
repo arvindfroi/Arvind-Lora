@@ -97,6 +97,11 @@ def make_progress_callback(status_file, phase):
             logs = logs or {}
             if "loss" in logs:
                 self.loss = logs["loss"]
+            # A run shorter than logging_steps never emits "loss", but Trainer always
+            # emits "train_loss" in its final summary. Without this, a short smoke run
+            # reports no loss at all and the pipeline's gate rejects a healthy run.
+            if "train_loss" in logs and self.loss is None:
+                self.loss = logs["train_loss"]
             if "eval_loss" in logs:
                 self.eval_loss = logs["eval_loss"]
 

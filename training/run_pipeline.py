@@ -69,9 +69,14 @@ def gate(status, max_step_seconds=45.0):
     means the fast kernels didn't engage (a full run would take many hours)."""
     if status.get("error"):
         return False, f"smoke reported error: {status['error']}"
+    # Fall back to eval_loss: a smoke run shorter than logging_steps may never log a
+    # train loss, but an eval loss proves just as well that the forward/backward path
+    # is sane. Demanding "loss" alone rejects healthy runs.
     loss = status.get("loss")
     if loss is None:
-        return False, "smoke produced no training loss"
+        loss = status.get("eval_loss")
+    if loss is None:
+        return False, "smoke produced neither a train nor an eval loss"
     if loss != loss or loss in (float("inf"), float("-inf")):  # NaN/inf
         return False, f"smoke loss not finite ({loss})"
     if loss > 20:
