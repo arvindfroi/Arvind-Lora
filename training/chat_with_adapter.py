@@ -25,16 +25,20 @@ SYSTEM = (
     "Språk: {lang}. Register: {register}."
 )
 
-# (lang, register, user-brief) — a spread of the voices in the corpus.
+# (lang, register, user-brief) — the formal/informal x no/en matrix.
 PROMPTS = [
-    ("norsk", "academic",
-     "Skriv et kort avsnitt om hva nirvana er i buddhismen og hvordan man oppnår det."),
-    ("norsk", "chat-ai",
-     "Forklar kort hvorfor himmelen er blå."),
+    ("norsk", "formal-inquiry",
+     "Skriv en kort e-post til en foreleser der du ber om utsettelse på en innlevering fordi du har vært syk."),
+    ("norsk", "academic-exam",
+     "Eksamenssvar: Gjør kort rede for forskjellen mellom monoteisme og polyteisme, med eksempler."),
     ("norsk", "chat-snapchat",
-     "(Svar en kompis som spør om du er med på LAN i helga.)"),
-    ("engelsk", "chat-ai",
-     "Give me 3 team ideas for a competitive Pokemon match."),
+     "(En kompis spør hva du gjør i kveld.)"),
+    ("norsk", "opinion-en",
+     "Skriv en kort, uformell mening om hvorfor vinter er bedre enn sommer."),
+    ("engelsk", "formal-application",
+     "Write a short, formal email applying for a part-time job at a game store."),
+    ("engelsk", "chat-en",
+     "(A friend asks if you want to grab food later.)"),
 ]
 
 
