@@ -18,7 +18,11 @@ set -euo pipefail
 REPO_URL="github.com/arvindfroi/Arvind-Lora"
 WORK=/workspace
 [ -d "$WORK" ] || WORK="$HOME"
-: "${GITHUB_TOKEN:?Set GITHUB_TOKEN to a PAT with read access to the private repo}"
+# A token is only needed to FETCH the repo. If it's already on the pod (uploaded by
+# hand), no credential ever has to exist.
+if [ ! -d "$WORK/Arvind-Lora/.git" ] && [ ! -f "$WORK/Arvind-Lora/training/train_qwythos.py" ]; then
+    : "${GITHUB_TOKEN:?Repo not found at $WORK/Arvind-Lora. Either upload it there, or set GITHUB_TOKEN to a PAT with read access.}"
+fi
 
 # Keep the 19GB model on the persistent volume, not the container's ephemeral /root.
 # A pod restart otherwise re-downloads it, which costs real money.
@@ -31,7 +35,7 @@ if [ -z "${TMUX:-}" ] && [ "${NO_TMUX:-0}" != "1" ] && command -v tmux >/dev/nul
     echo "== Re-executing inside tmux (session: train) so a dropped connection can't kill the run."
     echo "== Detach with Ctrl-b d, reattach with: tmux attach -t train"
     sleep 2
-    exec tmux new-session -s train "GITHUB_TOKEN='$GITHUB_TOKEN' NO_TMUX=1 bash '$0'; echo; echo '[exited — press enter]'; read"
+    exec tmux new-session -s train "GITHUB_TOKEN='${GITHUB_TOKEN:-}' NO_TMUX=1 bash '$0'; echo; echo '[exited — press enter]'; read"
 fi
 
 echo "== [1/6] GPU =="
@@ -42,12 +46,15 @@ if [ "$VRAM_GB" -lt 22000 ]; then
     exit 1
 fi
 
-echo "== [2/6] Clone private repo =="
+echo "== [2/6] Get the repo =="
 cd "$WORK"
-if [ ! -d Arvind-Lora ]; then
+if [ -d Arvind-Lora ]; then
+    echo "   already present at $WORK/Arvind-Lora — not cloning"
+else
     git clone --depth 1 "https://${GITHUB_TOKEN}@${REPO_URL}" Arvind-Lora
 fi
 cd Arvind-Lora
+test -f training/train_qwythos.py || { echo "!! repo looks incomplete" >&2; exit 1; }
 
 echo "== [3/6] Python env + kernels (fla + flash-attn) =="
 pip install -q --upgrade pip
