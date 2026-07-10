@@ -61,6 +61,9 @@ def main():
                          "Trims the redundant Snapchat tail; keeps small files "
                          "(Messenger) whole. Improves register balance and "
                          "training time without touching val.")
+    ap.add_argument("--cap", action="append", default=[], metavar="NAME=N",
+                    help="per-file override of --max-chat-per-file, e.g. --cap chatgpt=2500. "
+                         "Repeatable. NAME is the chat file's stem.")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--out", default=str(ROOT / "training" / "out"))
     args = ap.parse_args()
@@ -78,16 +81,26 @@ def main():
     n_val = max(1, int(len(curated) * args.corpus_val_ratio))
     corpus_val, corpus_train = curated[:n_val], curated[n_val:]
 
+    caps = {}
+    for spec in args.cap:
+        name, _, n = spec.partition("=")
+        if not n.isdigit():
+            ap.error(f"--cap expects NAME=N, got {spec!r}")
+        caps[name] = int(n)
+
     # chat data
     chat_train, chat_val = [], []
+    per_file = {}
     for f in sorted((ROOT / "data" / "chat").glob("*.jsonl")):
         rows = [json.loads(l) for l in open(f, encoding="utf-8")]
         random.shuffle(rows)
         k = int(len(rows) * args.chat_val_ratio)
         chat_val.extend(rows[:k])
         keep = rows[k:]
-        if args.max_chat_per_file and len(keep) > args.max_chat_per_file:
-            keep = keep[:args.max_chat_per_file]   # already shuffled above
+        cap = caps.get(f.stem, args.max_chat_per_file)
+        if cap and len(keep) > cap:
+            keep = keep[:cap]                     # already shuffled above
+        per_file[f.stem] = len(keep)
         chat_train.extend(keep)
 
     train = corpus_train * args.upsample + chat_train
@@ -106,6 +119,8 @@ def main():
     print(f"train: {len(train):6d} samples (~{t_train/1e6:.2f}M tokens) "
           f"[curated {len(corpus_train)}x{args.upsample} + chat {len(chat_train)}]")
     print(f"val:   {len(val):6d} samples (~{t_val/1e6:.2f}M tokens)")
+    for name, n in sorted(per_file.items(), key=lambda kv: -kv[1]):
+        print(f"         {name:<12} {n:5d}  ({n/len(chat_train)*100:4.1f}% of chat)")
     print(f"-> {out}/train.jsonl, {out}/val.jsonl")
 
 

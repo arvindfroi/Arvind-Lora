@@ -4,10 +4,12 @@
 #   export GITHUB_TOKEN=ghp_xxx        # fine-grained PAT with read access to the private repo
 #   bash cloud_setup.sh
 #
-# Recommended pod: 1x RTX 4090 24GB (or A40/L40 48GB), "PyTorch 2.x" template,
-# ~50GB disk. Datacenter GPUs have tuned fla + flash-attn kernels, so this runs
-# ~1-2h for 2 epochs (vs ~40h on the Blackwell laptop). DELETE THE VOLUME after
-# you download the adapter — the corpus is private.
+# Recommended pod: RunPod SECURE Cloud, 1x A40 48GB, EU region, "PyTorch 2.x"
+# template, ~60GB disk. Secure Cloud = RunPod's own datacenters (not peer hosts);
+# an EU region keeps this Norwegian personal data in the EU. Datacenter GPUs have
+# tuned fla + flash-attn kernels, so this runs ~2-3h for 2 epochs (vs ~40h on the
+# Blackwell laptop). DELETE THE VOLUME after you download the adapter — the corpus
+# is verbatim private email and chat.
 set -euo pipefail
 
 REPO_URL="github.com/arvindfroi/Arvind-Lora"
@@ -35,16 +37,24 @@ pip install -q flash-linear-attention
 pip install -q flash-attn --no-build-isolation || echo "flash-attn wheel unavailable; will train without packing"
 
 echo "== [4/5] Build training data (balanced mix) =="
-python training/prepare_training_data.py --max-chat-per-file 3500
+# chatgpt is capped tighter than the rest: 5082 raw samples of Arvind prompting an
+# AI would otherwise crowd out the Snapchat dialect core.
+python training/prepare_training_data.py --max-chat-per-file 3500 --cap chatgpt=2500
 
 echo "== [5/5] Train (packing + flash-attn if available) =="
 HAS_FA=$(python -c "import importlib.util as u;print(1 if u.find_spec('flash_attn') else 0)")
+# >=40GB cards fit a bigger batch without gradient checkpointing.
+VRAM_GB=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits | head -1)
+if [ "$VRAM_GB" -ge 40000 ]; then BATCH=4; GA=4; else BATCH=1; GA=16; fi
+echo "   ${VRAM_GB}MiB VRAM -> batch=${BATCH} grad_accum=${GA}"
 if [ "$HAS_FA" = "1" ]; then
     python -u training/train_qwythos.py --epochs 2 \
+        --batch "$BATCH" --grad-accum "$GA" \
         --packing --attn flash_attention_2 \
         --out training/lora_out_qwythos --status-file training/status.json
 else
     python -u training/train_qwythos.py --epochs 2 \
+        --batch "$BATCH" --grad-accum "$GA" \
         --out training/lora_out_qwythos --status-file training/status.json
 fi
 

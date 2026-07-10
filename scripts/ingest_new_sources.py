@@ -21,6 +21,7 @@ openclaw*, smash-*, chat-*) and the AI turns in the Claude export.
 import argparse
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -112,6 +113,69 @@ def parse_claude(conv_path):
                 ],
             })
             last_ai = ""
+    return out
+
+
+# ---------------------------------------------------------------- ChatGPT
+def _cg_text(msg):
+    """Plain text of a ChatGPT message, or '' if it isn't plain text.
+
+    'thoughts' and 'reasoning_recap' are the assistant's private reasoning, never
+    Arvind's words; multimodal parts are dicts (images) and are skipped.
+    """
+    content = msg.get("content") or {}
+    if content.get("content_type") not in ("text", "multimodal_text"):
+        return ""
+    parts = content.get("parts") or []
+    return "\n".join(p for p in parts if isinstance(p, str)).strip()
+
+
+def _cg_visible(msg):
+    """Drop custom-instruction blobs and system messages disguised as user turns."""
+    meta = msg.get("metadata") or {}
+    return not (meta.get("is_user_system_message")
+                or meta.get("is_visually_hidden_from_conversation"))
+
+
+def parse_chatgpt(export_dir):
+    """ChatGPT export: conversations-*.json, each a list of conversations whose
+    `mapping` is a node tree. Keep only Arvind's own (`user`) turns; assistant text
+    is retained solely as truncated context for the turn that answers it."""
+    out = []
+    for path in sorted(Path(export_dir).glob("conversations-*.json")):
+        for c in json.load(open(path, encoding="utf-8")):
+            nodes = [v["message"] for v in c.get("mapping", {}).values()
+                     if v.get("message") and v["message"].get("create_time") is not None]
+            nodes.sort(key=lambda m: m["create_time"])
+            last_ai = ""
+            for m in nodes:
+                role = (m.get("author") or {}).get("role")
+                if role not in ("user", "assistant"):
+                    continue                      # system / tool
+                text = _cg_text(m)
+                if role == "assistant":
+                    if text:
+                        last_ai = text
+                    continue
+                if not (_cg_visible(m) and is_his_prose(text)):
+                    last_ai = ""                  # reset after a dropped/huge turn
+                    continue
+                lang = detect_lang(text)
+                if last_ai:
+                    ctx = last_ai if len(last_ai) <= 700 else last_ai[:700] + " […]"
+                    user = f"Assistenten svarte:\n{ctx}"
+                else:
+                    user = f"(Start på en samtale med en AI-assistent: «{c.get('title','')}»)"
+                out.append({
+                    "id": f"chatgpt-{str(m.get('id',''))[:8]}",
+                    "messages": [
+                        {"role": "system", "content": SYSTEM_AICHAT.format(
+                            lang=lang_name(lang), register="chat-ai")},
+                        {"role": "user", "content": user},
+                        {"role": "assistant", "content": text},
+                    ],
+                })
+                last_ai = ""
     return out
 
 
@@ -216,47 +280,65 @@ def parse_essays(downloads):
     return out
 
 
+SOURCES = ("claude", "chatgpt", "discord", "essays")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--downloads", default=str(Path.home() / "Downloads"))
+    ap.add_argument("--only", default="", help=f"comma-separated subset of {','.join(SOURCES)}. "
+                    "Essays APPEND to corpus.jsonl, so re-running them duplicates rows.")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
     dl = Path(args.downloads)
+    want = set(args.only.split(",")) if args.only else set(SOURCES)
+    bad = want - set(SOURCES)
+    if bad:
+        ap.error(f"unknown source(s): {', '.join(sorted(bad))}")
 
-    claude_json = next(dl.glob("data-*/conversations.json"), None) \
-        or next(dl.glob("**/conversations.json"), None)
+    claude_json = next(dl.glob("data-*/conversations.json"), None)
+    # The export is sharded; pick the directory holding the most shards, so a stray
+    # loose conversations-000.json in Downloads can't shadow the real export dir.
+    shard_dirs = Counter(p.parent for p in dl.glob("**/conversations-0*.json"))
+    chatgpt_dir = shard_dirs.most_common(1)[0][0] if shard_dirs else None
     discord_root = dl / "package" / "Messages"
 
-    claude = parse_claude(claude_json) if claude_json else []
-    discord = parse_discord(discord_root) if discord_root.exists() else []
-    essays = parse_essays(dl)
+    claude = parse_claude(claude_json) if "claude" in want and claude_json else []
+    chatgpt = parse_chatgpt(chatgpt_dir) if "chatgpt" in want and chatgpt_dir else []
+    discord = parse_discord(discord_root) if "discord" in want and discord_root.exists() else []
+    essays = parse_essays(dl) if "essays" in want else []
 
-    print(f"Claude  (his replies): {len(claude):5d} samples"
-          f"  [{sum(len(s['messages'][2]['content']) for s in claude)//6} words]")
-    print(f"Discord (his msgs):    {len(discord):5d} samples"
-          f"  [{sum(len(s['messages'][2]['content']) for s in discord)//6} words]")
+    def words(samples):
+        return sum(len(s["messages"][2]["content"]) for s in samples) // 6
+
+    print(f"Claude  (his replies): {len(claude):5d} samples  [{words(claude)} words]")
+    print(f"ChatGPT (his replies): {len(chatgpt):5d} samples  [{words(chatgpt)} words]")
+    print(f"Discord (his msgs):    {len(discord):5d} samples  [{words(discord)} words]")
     print(f"Essays  (gold chunks): {len(essays):5d} samples"
           f"  [{sum(len(e['text']) for e in essays)//6} words]")
 
     if args.dry_run:
         print("\n--dry-run: nothing written. Samples preview:")
-        for s in (claude[:1] + discord[:1]):
+        for s in (claude[:1] + chatgpt[:1] + discord[:1]):
             print(json.dumps(s, ensure_ascii=False)[:300])
         return
 
-    (REPO / "data" / "chat" / "claude.jsonl").write_text(
-        "\n".join(json.dumps(s, ensure_ascii=False) for s in claude) + "\n",
-        encoding="utf-8")
-    (REPO / "data" / "chat" / "discord.jsonl").write_text(
-        "\n".join(json.dumps(s, ensure_ascii=False) for s in discord) + "\n",
-        encoding="utf-8")
-    # append essays to corpus.jsonl (gold tier -> upsampled with the rest)
-    with open(REPO / "data" / "corpus.jsonl", "a", encoding="utf-8") as f:
-        for e in essays:
-            f.write(json.dumps(e, ensure_ascii=False) + "\n")
+    wrote = []
+    for name, rows in (("claude", claude), ("chatgpt", chatgpt), ("discord", discord)):
+        if name not in want:
+            continue
+        (REPO / "data" / "chat" / f"{name}.jsonl").write_text(
+            "\n".join(json.dumps(s, ensure_ascii=False) for s in rows) + "\n",
+            encoding="utf-8")
+        wrote.append(f"data/chat/{name}.jsonl")
+    if essays:
+        # append: gold tier -> upsampled with the rest of corpus.jsonl
+        with open(REPO / "data" / "corpus.jsonl", "a", encoding="utf-8") as f:
+            for e in essays:
+                f.write(json.dumps(e, ensure_ascii=False) + "\n")
+        wrote.append("data/corpus.jsonl (appended essays)")
 
-    print("\nwrote data/chat/claude.jsonl, data/chat/discord.jsonl, "
-          "and appended essays to data/corpus.jsonl")
+    print("\nwrote " + ", ".join(wrote))
 
 
 if __name__ == "__main__":
